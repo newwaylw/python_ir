@@ -3,7 +3,7 @@
 import sys, re, os, pickle, argparse
 from collections import Counter
 from collections import defaultdict
-
+from functools import reduce
 
 # remove non alphabets at the beginning or end of a word
 # NOTE: this assumes the text is English!
@@ -56,9 +56,10 @@ def main(dir_root, output_file, stop_file=None, max_word_length=20):
                         idf[id].add(doc_id)
             doc_id += 1
     except KeyboardInterrupt:
-        print("Program interrupted, saving model...")
+        print("Program interrupted ...")
     finally:
         # serialise model as a file
+        print("saving model as:", output_file)
         with open(output_file, 'wb') as f:
             pickle.dump((documents, word_ids, word_list, tf, idf), f)
 

@@ -13,12 +13,15 @@ A simple TF-IDF based indexing / query system using python.
 
 	optional arguments:
   	  -h, --help            show this help message and exit
-  	  -s STOP_LIST, --stop_list STOP_LIST optional stop word list
+  	  -s STOP_LIST, --stop_list STOP_LIST
+                        stop word list (default: None)
+  	  -m MAX_WORD_LENGTH, --max_word_length MAX_WORD_LENGTH
+                        ignore words longer than this (default: 20)
                         
                         
 For exmaple:
     
-    python3 build_index.py input_folder output_model_name <stop list>
+    python3 build_index.py 20_newsgroups my.model
     
 All files in input_folder are processed, you can also pass an optional stopword file to ignore some words, each word in the the stopword file should be space separated. An example English stop word list is given.
 
