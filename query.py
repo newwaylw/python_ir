@@ -34,9 +34,10 @@ def query(documents, word_ids, word_list, df, idf, term_lists):
         # r = list(r)
         # print ("intersec docs:", r)
         for doc_id in r:
-            # tf-idf(w,d) = df(d, w) * log(1+ N/size of idf(w) )
-            # sum over all valid search terms
-            score = reduce(lambda acc, x: acc+(df[doc_id, word_ids[x]] / math.log(1+ (total_doc/len(idf[word_ids[x]]))) ), l1, 0)
+            # tf(d,w) = 1+log(df(d, w)), using log scaling
+            # idf(w) = log(1+ total_documents/size of idf(w) )
+            # score += tf * idf, i.e. sum over all valid search terms
+            score = reduce(lambda acc, x: acc+((1+math.log(df[doc_id, word_ids[x]])) / math.log(1 + (total_doc/len(idf[word_ids[x]]))) ), l1, 0)
             if doc_id not in result_dict:
                 result_dict[doc_id] = score
             else:

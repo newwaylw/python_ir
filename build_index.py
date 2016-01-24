@@ -41,7 +41,7 @@ def main(dir_root, output_file, stop_file=None, max_word_length=20):
             with open(doc, 'r', encoding="iso-8859-1") as d:
                 print("processing %s, %d/%d" % (doc, doc_id+1, total))
                 for line in d:
-                    v = filter(lambda x: x not in stop_set and len(x) <= max_word_length, clean(re.split('\s+', line)))
+                    v = filter(lambda x: x not in stop_set and 0 < len(x) <= max_word_length, clean(re.split('\s+', line)))
                     for word in v:
                         # word_id is the number when it first appears.
                         if word in word_ids:

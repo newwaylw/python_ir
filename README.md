@@ -1,5 +1,5 @@
-#A TF-IDF based search engine
-A simple TF-IDF based indexing / query system using python.
+#A TF-IDF search engine
+######A simple TF-IDF based indexing / query system using python.
 
 ###Usage 
 
@@ -49,8 +49,14 @@ For exmaple:
 	Search:
 	
 ####Search boolean logic
-you can use 'AND', 'OR' (case-insensitive) between search terms. 'AND' takes precedence before 'OR', if they are missing, 'AND' is assumed. e.g.
+You can use 'AND', 'OR' (case-insensitive) between search terms. 'AND' takes precedence before 'OR', if they are missing, 'AND' is assumed. e.g.
 
 **"apple banana OR orange"**
 is equivalent to
 **"(apple AND banana) OR orange"**
+
+####To do
+* NOT logic
+* ngram indexing (i.e. support consecutive words search)
+* better ranking algorithm than TD-IDF
+ 
