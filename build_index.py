@@ -12,7 +12,7 @@ def clean(iterable):
     return map(lambda x: x.lower(), m1)
 
 
-def main(dir_root, output_file, stop_file=None):
+def main(dir_root, output_file, stop_file=None, max_word_length=20):
     stop_set = set()
     documents = list()
     word_ids = dict()
@@ -26,8 +26,8 @@ def main(dir_root, output_file, stop_file=None):
     # load optional stop word list if exists
     if (stop_file):
         with open(stop_file, 'r') as f:
-            m = map(lambda x : re.split('\s+', x), f.lower())
-            stop_set = reduce(lambda acc, se: acc.union(se), m, set())
+            m = map(lambda x: re.split('\s+', x), f)
+            stop_set = set(map(lambda x: x.lower(), reduce(lambda acc, se: acc.union(se), m, set())))
 
     # store each document's path
     for root, dirs, files in os.walk(dir_root):
@@ -39,9 +39,9 @@ def main(dir_root, output_file, stop_file=None):
     try:
         for doc in documents:
             with open(doc, 'r', encoding="iso-8859-1") as d:
-                print("processing %s, %d/%d"%(doc, doc_id+1, total))
+                print("processing %s, %d/%d" % (doc, doc_id+1, total))
                 for line in d:
-                    v = filter(lambda x: x not in stop_set, clean(re.split('\s+', line)))
+                    v = filter(lambda x: x not in stop_set and len(x) <= max_word_length, clean(re.split('\s+', line)))
                     for word in v:
                         # word_id is the number when it first appears.
                         if word in word_ids:
@@ -64,11 +64,13 @@ def main(dir_root, output_file, stop_file=None):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(usage=sys.argv[0])
+    parser = argparse.ArgumentParser(usage=sys.argv[0], formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument("input", help="Input file/folder for index building")
     parser.add_argument("output", help="output file for index object")
-    parser.add_argument("-s", "--stop_list", default=None, help='optional stop word list')
+    parser.add_argument("-s", "--stop_list", default=None, help='stop word list')
+    parser.add_argument("-m", "--max_word_length", type=int, default=20, help='ignore words longer than this')
+
     args = parser.parse_args()
 
-    main(args.input, args.output, args.stop_list)
+    main(args.input, args.output, args.stop_list, args.max_word_length)
