@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
 import sys, re, os, pickle, argparse
-from functools import reduce
 from collections import Counter
 from collections import defaultdict
+
 
 # remove non alphabets at the beginning or end of a word
 # NOTE: this assumes the text is English!
@@ -18,16 +18,16 @@ def main(dir_root, output_file, stop_file=None):
     word_ids = dict()
     word_list = list()
 
-    df = Counter()
+    # term frequency
+    tf = Counter()
     # store a set of documents for each word occurred in
-    idf  = defaultdict(set)
+    idf = defaultdict(set)
 
     # load optional stop word list if exists
     if (stop_file):
         with open(stop_file, 'r') as f:
-            for line in f:
-                for x in re.split("\s+", line.lower()):
-                    stop_set.add(x)
+            m = map(lambda x : re.split('\s+', x), f.lower())
+            stop_set = reduce(lambda acc, se: acc.union(se), m, set())
 
     # store each document's path
     for root, dirs, files in os.walk(dir_root):
@@ -39,7 +39,7 @@ def main(dir_root, output_file, stop_file=None):
     try:
         for doc in documents:
             with open(doc, 'r', encoding="iso-8859-1") as d:
-                print("processing %s, %d/%d"%(doc, doc_id+1, total) )
+                print("processing %s, %d/%d"%(doc, doc_id+1, total))
                 for line in d:
                     v = filter(lambda x: x not in stop_set, clean(re.split('\s+', line)))
                     for word in v:
@@ -52,7 +52,7 @@ def main(dir_root, output_file, stop_file=None):
                             word_list.append(word)
 
                         # store document term frequency
-                        df[doc_id, id] += 1
+                        tf[doc_id, id] += 1
                         idf[id].add(doc_id)
             doc_id += 1
     except KeyboardInterrupt:
@@ -60,7 +60,7 @@ def main(dir_root, output_file, stop_file=None):
     finally:
         # serialise model as a file
         with open(output_file, 'wb') as f:
-            pickle.dump((documents, word_ids, word_list, df, idf), f)
+            pickle.dump((documents, word_ids, word_list, tf, idf), f)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import sys,re,math,pickle,argparse
 from functools import reduce
 from collections import Counter
 
+
 # return a tuple of object serialised by build_index.py
 # (documents, word_ids, word_list, df, idf )
 def load_index(pickled_file):
@@ -14,79 +15,60 @@ def load_index(pickled_file):
 # when boolean operator 'AND' 'OR' is missing, assume 'AND' the default behavior between terms
 # term-lists [[w1, w2] [w3, w4] [w5] ...] interpret as (w1 AND w2) OR (W3 AND w4) OR w5
 def query(documents, word_ids, word_list, df, idf, term_lists):
-    '''
-    #DEBUG
-    print("total documents:", len(documents))
-    print("total words:", len(word_list))
-    print("total word ids (=words?):", len(word_ids))
-    print("total dfs:", len(df))
-    print("total idf:", len(idf))
-
-    test = 'materialism'
-    if test in word_list:
-        print('id of', test , "=", word_ids[test])
-        print('doc ids of ', test, ':', idf[word_ids[test]])
-        for d in idf[word_ids[test]]:
-            print(documents[d])
-    else:
-        print(test, "not in model")
-
-    #DEBUG
-    '''
     total_doc = len(documents)
     result_dict = Counter()
 
     # searh each set of words, this itself is OR logic
     for l1 in term_lists:
-        #keep search terms in model
+        # keep search terms in model
         f = list(filter(lambda x: x in word_list, l1))
-        #if any of the search term is not present, it won't match any document.
+        # if any of the search term is not present, it won't match any document.
         if len(f) != len(l1):
             continue
-        #find their id
+        # find their id
         m = map(lambda x: word_ids[x], f)
-        #find document that contain those terms
+        # find document that contain those terms
         s = map(lambda x: idf[x], m)
-        #find interection (AND operation)
+        # find interection (AND operation)
         r = reduce(lambda acc, x : acc.intersection(x), s)
-        #r = list(r)
-        #print ("intersec docs:", r)
+        # r = list(r)
+        # print ("intersec docs:", r)
         for doc_id in r:
-            #tf-idf score(w) = df(w) * log(1+ N/size of idf(w) )
+            # tf-idf(w,d) = df(d, w) * log(1+ N/size of idf(w) )
             # sum over all valid search terms
             score = reduce(lambda acc, x: acc+(df[doc_id, word_ids[x]] / math.log(1+ (total_doc/len(idf[word_ids[x]]))) ), l1, 0)
             if doc_id not in result_dict:
                 result_dict[doc_id] = score
             else:
-                #if a document matches multiple 'OR' search terms, keep the maximum score only
+                # if a document matches multiple 'OR' search terms, keep the maximum score only
                 result_dict[doc_id] = max(result_dict[doc_id], score)
 
     return result_dict
 
+
 def main(model, num_results=10):
-    (documents, word_ids, word_list, df, idf) = load_index(model)
+    (documents, word_ids, word_list, tf, idf) = load_index(model)
 
     while True:
         i = 0
         try:
             q = input("Search:")
-            #lowercase everything
+            # lowercase everything
             q = q.lower()
-            #group terms by 'OR'
+            # group terms by 'OR'
             l = q.split(' or ')
-
-            #then group terms by 'AND', spaces interpreted as 'AND' as well,
-            #'AND' takes precedence. e.g.:
-            # 'me you OR she' = '(me AND you) OR she'
+            # then group terms by 'AND', spaces interpreted as 'AND' as well,
+            # 'AND' takes precedence. e.g.:
+            # 'me you OR her' = '(me AND you) OR her'
             search_list = list(map(lambda x: re.split(' and |\s+',x), l))
-            result = query(documents, word_ids, word_list, df, idf, search_list)
+            result = query(documents, word_ids, word_list, tf, idf, search_list)
             if len(result) == 0:
                 print("No results.")
             else:
-                #return most relevant n documents
+                # return most relevant n documents
                 for doc_id, score in result.most_common(num_results):
                     i+=1
-                    print(i, documents[doc_id], '\t' , "%.4f" % score)
+                    print(i, documents[doc_id], '\t', "%.4f" % score)
         except KeyboardInterrupt:
             print("\nBye. 再见.")
             sys.exit(1)
